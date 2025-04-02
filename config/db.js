@@ -1,0 +1,1 @@
+export const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://modir:lmW4ygfCrZBLYzvm@zidiback.pefsj.mongodb.net/user?retryWrites=true&w=majority&appName=zidiback";
