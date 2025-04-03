@@ -65,20 +65,39 @@ transporter.verify(function(error, success) {
   }
 });
 
-export const sendWelcomeEmail = async (email, name, token) => {
+export const sendWelcomeEmail = async (email, name, verificationUrl) => {
   try {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
-    
     await transporter.sendMail({
-      from: 'contact@zidi.com',
+      from: process.env.EMAIL_FROM || 'contact@zidi.com',
       to: email,
-      subject: 'Verify Your Email',
-      html: `<p>Click <a href="${verificationUrl}">here</a> to verify</p>`
+      subject: 'Vérification de votre email',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2c3e50;">Bonjour ${name},</h2>
+          <p style="color: #34495e; line-height: 1.6;">
+            Merci pour votre inscription. Veuillez cliquer sur le bouton ci-dessous pour vérifier votre adresse email:
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" style="
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #0abab5;
+              color: white;
+              text-decoration: none;
+              border-radius: 4px;
+              font-weight: bold;
+            ">Vérifier mon email</a>
+          </div>
+          <p style="color: #7f8c8d; font-size: 14px;">
+            Si vous n'avez pas demandé cette inscription, veuillez ignorer cet email.
+          </p>
+        </div>
+      `
     });
-    console.log('Test email sent to Mailtrap inbox');
+    console.log(`Verification email sent to ${email}`);
   } catch (error) {
-    console.error('Email sending failed:', error);
-    throw error;
+    console.error('Failed to send welcome email:', error);
+    throw new Error('Failed to send verification email');
   }
 };
 

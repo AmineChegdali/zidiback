@@ -27,14 +27,28 @@ export const signup = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create verification token (expires in 24 hours)
+    // Create verification token
     const verificationToken = jwt.sign(
       { email },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    // Create new user
+    // Create verification URL
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+
+    // Attempt to send email FIRST
+    try {
+      await sendWelcomeEmail(email, firstName, verificationUrl);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: "Échec de l'envoi de l'email de vérification. Veuillez réessayer."
+      });
+    }
+
+    // Only create user if email was sent successfully
     const newUser = await User.create({
       firstName,
       lastName,
@@ -46,11 +60,7 @@ export const signup = async (req, res) => {
       isVerified: false
     });
 
-    // Send welcome email with verification link
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-    await sendWelcomeEmail(email, firstName, verificationUrl);
-
-    // Return response without sensitive data
+    // Return success response
     res.status(201).json({
       success: true,
       message: 'Compte créé avec succès. Veuillez vérifier votre email.',
@@ -89,7 +99,7 @@ export const login = async (req, res) => {
     if (!user.isVerified) {
       return res.status(403).json({ 
         success: false,
-        message: 'Compte non vérifié. Veuillez vérifier votre email.' 
+        message: 'Compte non vérifié. Veuillez vérifier votre boite de réception' 
       });
     }
 
@@ -152,6 +162,13 @@ export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.body;
     
+    if (!token) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Token de vérification manquant' 
+      });
+    }
+
     // Verify token and find matching user
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findOne({ 
@@ -163,6 +180,14 @@ export const verifyEmail = async (req, res) => {
       return res.status(400).json({ 
         success: false,
         message: 'Lien de vérification invalide ou expiré' 
+      });
+    }
+
+    // Check if already verified
+    if (user.isVerified) {
+      return res.status(200).json({ 
+        success: true,
+        message: 'Email déjà vérifié. Vous pouvez vous connecter.' 
       });
     }
 
@@ -186,9 +211,16 @@ export const verifyEmail = async (req, res) => {
       });
     }
     
-    res.status(400).json({ 
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Lien de vérification invalide' 
+      });
+    }
+    
+    res.status(500).json({ 
       success: false,
-      message: 'Lien de vérification invalide' 
+      message: 'Erreur interne du serveur' 
     });
   }
 };
