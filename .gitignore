@@ -1,0 +1,90 @@
+######################
+# Node.js/NPM
+######################
+node_modules/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Optional: exclude package-lock if you use yarn
+package-lock.json
+
+######################
+# Environment
+######################
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+######################
+# Build/Output
+######################
+# React
+.next/
+out/
+dist/
+build/
+*.min.js
+*.min.css
+
+# Express
+server/public/build/
+
+######################
+# MongoDB
+######################
+data/db/   # If using local MongoDB instance
+*.ns
+*.0
+*.1
+
+######################
+# IDE/Editor (Linux specific)
+######################
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vim/Neovim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+######################
+# Debug/Test
+######################
+coverage/
+.nyc_output/
+jest-report.json
+
+######################
+# OS Generated (Linux)
+######################
+.directory
+.trash-*
+.Trash-*
+.nfs*
+
+######################
+# Misc
+######################
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+.DS_Store
+Thumbs.db
